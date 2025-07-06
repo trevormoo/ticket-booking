@@ -1,33 +1,50 @@
-'use client'
+"use client"
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { signOut } from 'next-auth/react'
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { signOut } from "next-auth/react"
+
+type Booking = {
+  id: number
+  name: string
+  email: string
+  eventId: number
+  createdAt: string
+  checkedIn: boolean
+  event: {
+    id: number
+    title: string
+    date: string
+  }
+}
+
+type Event = {
+  id: number
+  title: string
+  date: string
+}
 
 export default function AdminClient() {
-  const [bookings, setBookings] = useState<any[]>([])
-  const [events, setEvents] = useState<any[]>([])
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [events, setEvents] = useState<Event[]>([])
   const [editing, setEditing] = useState(false)
-  const [editData, setEditData] = useState({ id: 0, title: '', date: '' })
+  const [editData, setEditData] = useState<Event>({ id: 0, title: '', date: '' })
   const [newTitle, setNewTitle] = useState('')
   const [newDate, setNewDate] = useState('')
   const router = useRouter()
 
-  // Fetch bookings
   useEffect(() => {
     fetch('/api/bookings')
       .then(res => res.json())
       .then(data => setBookings(data))
   }, [])
 
-  // Fetch events
   useEffect(() => {
     fetch('/api/events')
       .then(res => res.json())
       .then(data => setEvents(data))
   }, [])
 
-  // Delete booking
   const handleDelete = async (id: number) => {
     const confirmed = confirm('Are you sure you want to delete this booking?')
     if (!confirmed) return
@@ -41,7 +58,6 @@ export default function AdminClient() {
     }
   }
 
-  // Delete event
   const handleDeleteEvent = async (id: number) => {
     const confirmed = confirm('Are you sure you want to delete this event?')
     if (!confirmed) return
@@ -55,8 +71,7 @@ export default function AdminClient() {
     }
   }
 
-  // Edit event
-  const handleEdit = (event: any) => {
+  const handleEdit = (event: Event) => {
     setEditData({
       id: event.id,
       title: event.title,
@@ -65,13 +80,12 @@ export default function AdminClient() {
     setEditing(true)
   }
 
-  // Submit new event
   const handleCreateEvent = async (e: React.FormEvent) => {
     e.preventDefault()
     const res = await fetch('/api/events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: newTitle, date: newDate }),
+      body: JSON.stringify({ title: newTitle, date: newDate })
     })
 
     if (res.ok) {
@@ -84,13 +98,12 @@ export default function AdminClient() {
     }
   }
 
-  // Submit edited event
   const handleUpdateEvent = async (e: React.FormEvent) => {
     e.preventDefault()
     const res = await fetch(`/api/events/${editData.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: editData.title, date: editData.date }),
+      body: JSON.stringify({ title: editData.title, date: editData.date })
     })
 
     if (res.ok) {
@@ -138,7 +151,6 @@ export default function AdminClient() {
         </ul>
       )}
 
-      {/* CREATE EVENT FORM */}
       <h2 className="text-xl font-bold mt-8 mb-2">Create New Event</h2>
       <form onSubmit={handleCreateEvent} className="space-y-2 mb-6">
         <input
@@ -165,7 +177,6 @@ export default function AdminClient() {
         </button>
       </form>
 
-      {/* EDIT EVENT FORM */}
       {editing && (
         <form onSubmit={handleUpdateEvent} className="space-y-2 mb-6 mt-6">
           <h2 className="text-xl font-bold">Edit Event</h2>
@@ -193,7 +204,6 @@ export default function AdminClient() {
         </form>
       )}
 
-      {/* EVENTS LIST */}
       <h2 className="text-xl font-bold mt-8 mb-4">All Events</h2>
       <ul className="space-y-2">
         {events.map(e => (
