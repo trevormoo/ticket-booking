@@ -16,7 +16,7 @@ export async function sendConfirmationEmail({
   bookingId: string
 }) {
   const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
-  const qrLink = `${baseUrl}/api/qr?data=${bookingId}`
+  const qrLink = `${baseUrl}/api/qr?data=${encodeURIComponent(bookingId)}`
 
   return resend.emails.send({
     from: 'Ticket App <onboarding@resend.dev>',
