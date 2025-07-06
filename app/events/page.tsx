@@ -7,7 +7,7 @@ type Event = {
 }
 
 async function getEvents(): Promise<Event[]> {
-  const res = await fetch('http://localhost:3000/api/events', {
+  const res = await fetch(`${process.env.NEXTAUTH_URL}/api/events`, {
     cache: 'no-store',
   })
   return res.json()
