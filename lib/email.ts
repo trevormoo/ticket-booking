@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function sendConfirmationEmail({
@@ -14,8 +15,9 @@ export async function sendConfirmationEmail({
   eventDate: string
   bookingId: string
 }) {
-  const qrData = `Name: ${name}\nEvent: ${eventTitle}\nDate: ${eventDate}`
- 
+  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+  const qrLink = `${baseUrl}/api/qr?data=${bookingId}`
+
   return resend.emails.send({
     from: 'Ticket App <onboarding@resend.dev>',
     to: email,
@@ -23,8 +25,8 @@ export async function sendConfirmationEmail({
     html: `<p>Hi ${name},</p>
        <p>You’re booked for <strong>${eventTitle}</strong> on ${eventDate}.</p>
        <p>Open this QR code link:</p>
-       <a href="http://localhost:3000/api/qr?data=${bookingId}">
-         http://localhost:3000/api/qr?data=${bookingId}
+       <a href="${qrLink}">
+         ${qrLink}
        </a>
        <p>Thanks for booking with us!</p>`
   })
