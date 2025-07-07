@@ -1,6 +1,6 @@
-import { Resend } from 'resend'
+// lib/email.ts
+import nodemailer from 'nodemailer'
 import { generateQR } from './qr'
-const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function sendConfirmationEmail({
   name,
@@ -18,21 +18,31 @@ export async function sendConfirmationEmail({
   const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
   const ticketUrl = `${baseUrl}/tickets/${bookingId}`
 
-  // ✅ Generate QR code that points to ticket URL
-  const qrCode = await generateQR(ticketUrl)
+  const qrCode = await generateQR(bookingId) // using short string for QR
 
-  // ✅ Send email with inline QR image and fallback link
-  return resend.emails.send({
-    from: 'Ticket App <onboarding@resend.dev>',
+  const transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: Number(process.env.EMAIL_PORT),
+    secure: process.env.EMAIL_SECURE === 'true', // true for 465, false for 587
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  })
+
+  const info = await transporter.sendMail({
+    from: `"Ticket App" <${process.env.EMAIL_FROM}>`,
     to: email,
-    subject: '🎟️ Booking Confirmation with QR Code',
+    subject: '🎟️ Your Booking Confirmation',
     html: `
       <p>Hi ${name},</p>
       <p>You’re booked for <strong>${eventTitle}</strong> on ${eventDate}.</p>
-      <p>Scan the QR code below to access your ticket:</p>
-      <img src="${qrCode}" alt="Your Ticket QR Code" style="width:200px; margin-top: 10px;" />
-      <p>Or click here if the image doesn't load: <a href="${ticketUrl}">${ticketUrl}</a></p>
+      <p>Scan this QR code at the venue:</p>
+      <img src="${qrCode}" alt="QR Code" style="width:200px;" />
+      <p>Or click here if the image doesn’t load: <a href="${ticketUrl}">${ticketUrl}</a></p>
       <p>Thanks for booking with us!</p>
-    `
+    `,
   })
+
+  console.log('✅ Email sent:', info.messageId)
 }

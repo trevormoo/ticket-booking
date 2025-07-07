@@ -43,9 +43,9 @@ if (existing) {
   await sendConfirmationEmail({
   name,
   email,
-  eventTitle: booking.event.title, 
+  eventTitle: booking.event.title,
   eventDate: new Date(booking.event.date).toLocaleDateString(),
+  bookingId: booking.id.toString()
 })
-
   return NextResponse.json(booking, { status: 201 })
 }
