@@ -46,30 +46,34 @@ export default function AdminClient() {
   }, [])
 
   const handleDelete = async (id: number) => {
-    const confirmed = confirm('Are you sure you want to delete this booking?')
-    if (!confirmed) return
+  const confirmed = confirm('Are you sure you want to delete this booking?')
+  if (!confirmed) return
 
-    const res = await fetch(`/api/bookings/${id}`, { method: 'DELETE' })
+  const res = await fetch(`/api/bookings/${id}`, { method: 'DELETE' })
 
-    if (res.ok) {
-      setBookings(prev => prev.filter(b => b.id !== id))
-    } else {
-      alert('Failed to delete booking.')
-    }
+  if (res.ok) {
+    // 🔁 Refetch bookings to ensure DB and UI are synced
+    const updated = await fetch('/api/bookings').then(res => res.json())
+    setBookings(updated)
+  } else {
+    alert('Failed to delete booking.')
   }
+}
 
   const handleDeleteEvent = async (id: number) => {
-    const confirmed = confirm('Are you sure you want to delete this event?')
-    if (!confirmed) return
+  const confirmed = confirm('Are you sure you want to delete this event?')
+  if (!confirmed) return
 
-    const res = await fetch(`/api/events/${id}`, { method: 'DELETE' })
+  const res = await fetch(`/api/events/${id}`, { method: 'DELETE' })
 
-    if (res.ok) {
-      setEvents(prev => prev.filter(e => e.id !== id))
-    } else {
-      alert('Failed to delete event.')
-    }
+  if (res.ok) {
+    // 🔁 Refetch events to ensure DB and UI are synced
+    const updated = await fetch('/api/events').then(res => res.json())
+    setEvents(updated)
+  } else {
+    alert('Failed to delete event.')
   }
+}
 
   const handleEdit = (event: Event) => {
     setEditData({
