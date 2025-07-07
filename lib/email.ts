@@ -20,7 +20,7 @@ export async function sendConfirmationEmail({
   const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
   const ticketUrl = `${baseUrl}/tickets/${bookingId}`
 
-  const qrCode = await generateQR(bookingId) // using short string for QR
+  const qrCode = await generateQR(ticketUrl) // using short string for QR
 
   const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
