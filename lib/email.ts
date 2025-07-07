@@ -2,6 +2,8 @@
 import nodemailer from 'nodemailer'
 import { generateQR } from './qr'
 
+console.log('📩 Using NEW Nodemailer version of sendConfirmationEmail ✅')
+
 export async function sendConfirmationEmail({
   name,
   email,
