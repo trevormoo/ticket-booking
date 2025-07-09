@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { signOut } from "next-auth/react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+
+// Types
 
 type Booking = {
   id: number
@@ -46,34 +50,32 @@ export default function AdminClient() {
   }, [])
 
   const handleDelete = async (id: number) => {
-  const confirmed = confirm('Are you sure you want to delete this booking?')
-  if (!confirmed) return
+    const confirmed = confirm('Are you sure you want to delete this booking?')
+    if (!confirmed) return
 
-  const res = await fetch(`/api/bookings/${id}`, { method: 'DELETE' })
+    const res = await fetch(`/api/bookings/${id}`, { method: 'DELETE' })
 
-  if (res.ok) {
-    // 🔁 Refetch bookings to ensure DB and UI are synced
-    const updated = await fetch('/api/bookings').then(res => res.json())
-    setBookings(updated)
-  } else {
-    alert('Failed to delete booking.')
+    if (res.ok) {
+      const updated = await fetch('/api/bookings').then(res => res.json())
+      setBookings(updated)
+    } else {
+      alert('Failed to delete booking.')
+    }
   }
-}
 
   const handleDeleteEvent = async (id: number) => {
-  const confirmed = confirm('Are you sure you want to delete this event?')
-  if (!confirmed) return
+    const confirmed = confirm('Are you sure you want to delete this event?')
+    if (!confirmed) return
 
-  const res = await fetch(`/api/events/${id}`, { method: 'DELETE' })
+    const res = await fetch(`/api/events/${id}`, { method: 'DELETE' })
 
-  if (res.ok) {
-    // 🔁 Refetch events to ensure DB and UI are synced
-    const updated = await fetch('/api/events').then(res => res.json())
-    setEvents(updated)
-  } else {
-    alert('Failed to delete event.')
+    if (res.ok) {
+      const updated = await fetch('/api/events').then(res => res.json())
+      setEvents(updated)
+    } else {
+      alert('Failed to delete event.')
+    }
   }
-}
 
   const handleEdit = (event: Event) => {
     setEditData({
@@ -112,9 +114,7 @@ export default function AdminClient() {
 
     if (res.ok) {
       const updated = await res.json()
-      setEvents(prev =>
-        prev.map(ev => (ev.id === updated.id ? updated : ev))
-      )
+      setEvents(prev => prev.map(ev => (ev.id === updated.id ? updated : ev)))
       setEditData({ id: 0, title: '', date: '' })
       setEditing(false)
     } else {
@@ -126,12 +126,9 @@ export default function AdminClient() {
     <main className="p-6 max-w-3xl mx-auto">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">All Bookings</h1>
-        <button
-          onClick={() => signOut()}
-          className="text-sm text-blue-600 underline"
-        >
+        <Button variant="outline" onClick={() => signOut()}>
           Logout
-        </button>
+        </Button>
       </div>
 
       {bookings.length === 0 ? (
@@ -144,12 +141,9 @@ export default function AdminClient() {
               <p>Event: <strong>{b.event.title}</strong></p>
               <p>Date: {new Date(b.event.date).toLocaleDateString()}</p>
               <p>Booked at: {new Date(b.createdAt).toLocaleString()}</p>
-              <button
-                onClick={() => handleDelete(b.id)}
-                className="text-red-600 border border-red-600 px-2 py-1 rounded text-sm hover:bg-red-600 hover:text-white"
-              >
+              <Button variant="destructive" onClick={() => handleDelete(b.id)}>
                 Delete
-              </button>
+              </Button>
             </li>
           ))}
         </ul>
@@ -157,54 +151,44 @@ export default function AdminClient() {
 
       <h2 className="text-xl font-bold mt-8 mb-2">Create New Event</h2>
       <form onSubmit={handleCreateEvent} className="space-y-2 mb-6">
-        <input
+        <Input
           name="title"
           placeholder="Event title"
           value={newTitle}
           onChange={e => setNewTitle(e.target.value)}
           required
-          className="w-full border p-2 rounded"
         />
-        <input
+        <Input
           name="date"
           type="date"
           value={newDate}
           onChange={e => setNewDate(e.target.value)}
           required
-          className="w-full border p-2 rounded"
         />
-        <button
-          type="submit"
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-        >
+        <Button type="submit">
           Create Event
-        </button>
+        </Button>
       </form>
 
       {editing && (
         <form onSubmit={handleUpdateEvent} className="space-y-2 mb-6 mt-6">
           <h2 className="text-xl font-bold">Edit Event</h2>
-          <input
+          <Input
             name="title"
             value={editData.title}
             onChange={e => setEditData({ ...editData, title: e.target.value })}
             required
-            className="w-full border p-2 rounded"
           />
-          <input
+          <Input
             name="date"
             type="date"
             value={editData.date}
             onChange={e => setEditData({ ...editData, date: e.target.value })}
             required
-            className="w-full border p-2 rounded"
           />
-          <button
-            type="submit"
-            className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700"
-          >
+          <Button type="submit" variant="secondary">
             Save Changes
-          </button>
+          </Button>
         </form>
       )}
 
@@ -214,18 +198,12 @@ export default function AdminClient() {
           <li key={e.id} className="border p-2 rounded flex justify-between items-center">
             <span>{e.title} – {new Date(e.date).toLocaleDateString()}</span>
             <div className="space-x-2">
-              <button
-                onClick={() => handleEdit(e)}
-                className="text-blue-600 border border-blue-600 px-2 py-1 rounded text-sm hover:bg-blue-600 hover:text-white"
-              >
+              <Button variant="outline" onClick={() => handleEdit(e)}>
                 Edit
-              </button>
-              <button
-                onClick={() => handleDeleteEvent(e.id)}
-                className="text-red-600 border border-red-600 px-2 py-1 rounded text-sm hover:bg-red-600 hover:text-white"
-              >
+              </Button>
+              <Button variant="destructive" onClick={() => handleDeleteEvent(e.id)}>
                 Delete
-              </button>
+              </Button>
             </div>
           </li>
         ))}
