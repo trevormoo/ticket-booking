@@ -5,10 +5,13 @@ const prisma = new PrismaClient()
 
 export async function DELETE(
   req: Request,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
-  const { params } = await Promise.resolve(context) // ✅ this avoids the warning
   const id = Number(params.id)
+
+  if (isNaN(id)) {
+    return NextResponse.json({ error: 'Invalid ID' }, { status: 400 })
+  }
 
   try {
     const deleted = await prisma.ticket.delete({

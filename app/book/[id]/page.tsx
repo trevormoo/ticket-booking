@@ -1,56 +1,21 @@
-'use client'
+import { notFound } from 'next/navigation'
+import { prisma } from '@/lib/prisma'
+import BookingForm from './BookingForm'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { toast } from 'sonner'
+export default async function BookPage({ params }: { params: { id: string } }) {
+  const event = await prisma.event.findUnique({
+    where: { id: Number(params.id) },
+  })
 
-export default function BookingForm({ eventId }: { eventId: number }) {
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-
-    const res = await fetch('/api/bookings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, eventId })
-    })
-
-    const result = await res.json()
-    setLoading(false)
-
-    if (res.ok) {
-      toast.success('🎉 Booking successful! Confirmation sent to your email.')
-      router.push(`/tickets/${result.id}`)
-    } else {
-      toast.error(result.error || 'Something went wrong.')
-    }
-  }
+  if (!event) return notFound()
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <Input
-        placeholder="Your name"
-        value={name}
-        onChange={e => setName(e.target.value)}
-        required
-      />
-      <Input
-        type="email"
-        placeholder="you@example.com"
-        value={email}
-        onChange={e => setEmail(e.target.value)}
-        required
-      />
-      <Button type="submit" disabled={loading}>
-        {loading ? 'Booking...' : 'Confirm Booking'}
-      </Button>
-    </form>
+    <main className="p-6 max-w-md mx-auto">
+      <h1 className="text-2xl font-bold mb-2">🎟 Book for {event.title}</h1>
+      <p className="text-sm text-gray-600 mb-6">
+        Event Date: {new Date(event.date).toLocaleDateString()}
+      </p>
+      <BookingForm eventId={event.id} />
+    </main>
   )
 }

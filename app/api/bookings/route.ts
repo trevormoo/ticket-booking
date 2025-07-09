@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import { NextResponse } from 'next/server'
 import { sendConfirmationEmail } from '../../../lib/email'
+
 const prisma = new PrismaClient()
 
 // GET: List all bookings with event info
@@ -21,15 +22,15 @@ export async function POST(req: Request) {
   }
 
   const existing = await prisma.ticket.findFirst({
-  where: { email, eventId: Number(eventId) },
-})
+    where: { email, eventId: Number(eventId) },
+  })
 
-if (existing) {
-  return NextResponse.json(
-    { error: 'You already booked this event.' },
-    { status: 409 }
-  )
-}
+  if (existing) {
+    return NextResponse.json(
+      { error: 'You already booked this event.' },
+      { status: 409 }
+    )
+  }
 
   const booking = await prisma.ticket.create({
     data: {
@@ -41,11 +42,13 @@ if (existing) {
   })
 
   await sendConfirmationEmail({
-  name,
-  email,
-  eventTitle: booking.event.title,
-  eventDate: new Date(booking.event.date).toLocaleDateString(),
-  bookingId: booking.id.toString()
-})
-  return NextResponse.json(booking, { status: 201 })
+    name,
+    email,
+    eventTitle: booking.event.title,
+    eventDate: new Date(booking.event.date).toLocaleDateString(),
+    bookingId: booking.id.toString()
+  })
+
+  // ✅ Return only the ID (this is what the frontend needs for redirect)
+  return NextResponse.json({ id: booking.id }, { status: 201 })
 }
