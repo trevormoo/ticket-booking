@@ -1,4 +1,4 @@
-// lib/email.ts
+import { v2 as cloudinary } from 'cloudinary'
 import nodemailer from 'nodemailer'
 import { generateQR } from './qr'
 
@@ -20,8 +20,19 @@ export async function sendConfirmationEmail({
   const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
   const ticketUrl = `${baseUrl}/tickets/${bookingId}`
 
-  const qrCode = await generateQR(ticketUrl) // using short string for QR
+const qrCodeDataUrl = await generateQR(ticketUrl)
 
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+})
+
+const uploadResult = await cloudinary.uploader.upload(qrCodeDataUrl, {
+  folder: 'ticket-qr-codes',
+})
+
+const qrCodeImageUrl = uploadResult.secure_url
   const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
     port: Number(process.env.EMAIL_PORT),
@@ -40,7 +51,7 @@ export async function sendConfirmationEmail({
       <p>Hi ${name},</p>
       <p>You’re booked for <strong>${eventTitle}</strong> on ${eventDate}.</p>
       <p>Scan this QR code at the venue:</p>
-      <img src="${qrCode}" alt="QR Code" style="width:200px;" />
+      <img src="${qrCodeImageUrl}" alt="QR Code" style="width:200px;" />
       <p>Or click here if the image doesn’t load: <a href="${ticketUrl}">${ticketUrl}</a></p>
       <p>Thanks for booking with us!</p>
     `,
