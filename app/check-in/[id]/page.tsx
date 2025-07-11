@@ -31,7 +31,7 @@ export default async function CheckInPage({ params }: { params: { id: string } }
             {isCheckedIn ? (
               <span className="text-green-600">✅ Already Checked In</span>
             ) : (
-              <form action={`/api/checkin`} method="POST" className="mt-2">
+              <form action={`/api/check-in`} method="POST" className="mt-2">
                 <input type="hidden" name="ticketId" value={ticket.id} />
                 <Button type="submit" variant="default">
                   Check In
