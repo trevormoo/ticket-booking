@@ -141,6 +141,8 @@ export default function AdminClient() {
               <p>Event: <strong>{b.event.title}</strong></p>
               <p>Date: {new Date(b.event.date).toLocaleDateString()}</p>
               <p>Booked at: {new Date(b.createdAt).toLocaleString()}</p>
+              <p><strong>Booking ID:</strong> {b.id}</p>
+              <p><strong>Checked In:</strong> {b.checkedIn ? '✅ Yes' : '❌ No'}</p>
               <Button variant="destructive" onClick={() => handleDelete(b.id)}>
                 Delete
               </Button>
