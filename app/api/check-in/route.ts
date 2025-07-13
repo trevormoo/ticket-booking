@@ -11,6 +11,8 @@ export async function POST(req: Request) {
   }
 
   try {
+    console.log('🔍 Received ticketId:', ticketId)
+
     const ticket = await prisma.ticket.update({
       where: { id: Number(ticketId) },
       data: { checkedIn: true },
@@ -18,6 +20,7 @@ export async function POST(req: Request) {
 
     return NextResponse.redirect(`/check-in/${ticketId}?success=1`)
   } catch (err) {
+    console.error('❌ Check-in failed:', err)
     return NextResponse.json({ error: 'Check-in failed' }, { status: 500 })
   }
 }
