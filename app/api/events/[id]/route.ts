@@ -7,7 +7,7 @@ export async function PUT(
   req: Request,
   { params }: { params: { id: string } }
 ) {
-  const { title, date } = await req.json()
+  const { title, date, capacity} = await req.json()
 
   const updated = await prisma.event.update({
     where: { id: Number(params.id) },
