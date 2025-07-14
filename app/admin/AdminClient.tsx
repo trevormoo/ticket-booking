@@ -99,7 +99,7 @@ export default function AdminClient() {
       id: event.id,
       title: event.title,
       date: new Date(event.date).toISOString().split('T')[0],
-      capacity: event.capacity || 0
+      capacity: event.capacity ?? 0
     })
     setEditing(true)
   }
@@ -127,7 +127,7 @@ export default function AdminClient() {
     const res = await fetch(`/api/events/${editData.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: editData.title, date: editData.date })
+      body: JSON.stringify({ title: editData.title, date: editData.date, capacity: editData.capacity})
     })
 
     if (res.ok) {
