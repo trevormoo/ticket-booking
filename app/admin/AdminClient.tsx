@@ -49,6 +49,19 @@ export default function AdminClient() {
       .then(data => setEvents(data))
   }, [])
 
+  const [stats, setStats] = useState<{
+  totalBookings: number
+  checkedIn: number
+  notCheckedIn: number
+  totalEvents: number
+  } | null>(null)
+
+  useEffect(() => {
+    fetch('/api/stats')
+      .then(res => res.json())
+      .then(data => setStats(data))
+  }, [])
+
   const handleDelete = async (id: number) => {
     const confirmed = confirm('Are you sure you want to delete this booking?')
     if (!confirmed) return
@@ -130,6 +143,28 @@ export default function AdminClient() {
           Logout
         </Button>
       </div>
+
+
+      {stats && (
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="bg-white rounded-xl shadow p-4">
+            <h3 className="text-sm font-semibold text-gray-500">📋 Total Bookings</h3>
+            <p className="text-2xl font-bold">{stats.totalBookings}</p>
+          </div>
+          <div className="bg-white rounded-xl shadow p-4">
+            <h3 className="text-sm font-semibold text-gray-500">✅ Checked In</h3>
+            <p className="text-2xl font-bold">{stats.checkedIn}</p>
+          </div>
+          <div className="bg-white rounded-xl shadow p-4">
+            <h3 className="text-sm font-semibold text-gray-500">❌ Not Checked In</h3>
+            <p className="text-2xl font-bold">{stats.notCheckedIn}</p>
+          </div>
+          <div className="bg-white rounded-xl shadow p-4">
+            <h3 className="text-sm font-semibold text-gray-500">📆 Total Events</h3>
+            <p className="text-2xl font-bold">{stats.totalEvents}</p>
+          </div>
+        </div>
+      )}
 
       {bookings.length === 0 ? (
         <p>No bookings found.</p>
