@@ -257,7 +257,7 @@ export default function AdminClient() {
           <li key={e.id} className="border p-2 rounded flex justify-between items-center">
             <span>
               {e.title} – {new Date(e.date).toLocaleDateString()} 
-              {typeof (e as any).capacity !== 'undefined' && ` | Capacity: ${(e as any).capacity}`}
+              {typeof e.capacity === 'number' && ` | Capacity: ${e.capacity}`}
             </span>
             <div className="space-x-2">
               <Button variant="outline" onClick={() => handleEdit(e)}>
