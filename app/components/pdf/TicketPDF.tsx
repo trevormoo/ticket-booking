@@ -46,7 +46,7 @@ export function TicketPDF({ ticket }: { ticket: Props['ticket'] }) {
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.section}>
-          <Text style={styles.heading}>🎟 Event Ticket</Text>
+          <Text style={styles.heading}>Event Ticket</Text>
         </View>
 
         <View style={styles.section}>

@@ -32,6 +32,20 @@ export async function POST(req: Request) {
     )
   }
 
+  // 🧠 Check if event is at capacity
+  const event = await prisma.event.findUnique({
+    where: { id: Number(eventId) },
+    include: { tickets: true }
+  })
+
+  if (!event) {
+    return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+  }
+
+  if (event.capacity && event.tickets.length >= event.capacity) {
+    return NextResponse.json({ error: 'Event is fully booked.' }, { status: 400 })
+  }
+
   const booking = await prisma.ticket.create({
     data: {
       name,
@@ -49,6 +63,5 @@ export async function POST(req: Request) {
     bookingId: booking.id.toString()
   })
 
-  // ✅ Return only the ID (this is what the frontend needs for redirect)
   return NextResponse.json({ id: booking.id }, { status: 201 })
 }
