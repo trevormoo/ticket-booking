@@ -14,6 +14,7 @@ export async function PUT(
     data: {
       title,
       date: new Date(date),
+      capacity: Number(capacity),
     },
   })
 

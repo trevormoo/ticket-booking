@@ -26,13 +26,17 @@ type Event = {
   id: number
   title: string
   date: string
+  capacity?: number
+
 }
 
 export default function AdminClient() {
+  const [newCapacity, setNewCapacity] = useState<number>(0)
+  
   const [bookings, setBookings] = useState<Booking[]>([])
   const [events, setEvents] = useState<Event[]>([])
   const [editing, setEditing] = useState(false)
-  const [editData, setEditData] = useState<Event>({ id: 0, title: '', date: '' })
+  const [editData, setEditData] = useState<Event>({ id: 0, title: '', date: '', capacity: 0 })
   const [newTitle, setNewTitle] = useState('')
   const [newDate, setNewDate] = useState('')
   const router = useRouter()
@@ -95,6 +99,7 @@ export default function AdminClient() {
       id: event.id,
       title: event.title,
       date: new Date(event.date).toISOString().split('T')[0],
+      capacity: event.capacity || 0
     })
     setEditing(true)
   }
@@ -104,7 +109,7 @@ export default function AdminClient() {
     const res = await fetch('/api/events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: newTitle, date: newDate })
+      body: JSON.stringify({ title: newTitle, date: newDate, capacity: newCapacity }) // ✅ include it
     })
 
     if (res.ok) {
@@ -202,6 +207,15 @@ export default function AdminClient() {
           onChange={e => setNewDate(e.target.value)}
           required
         />
+          <Input
+            name="capacity"
+            type="number"
+            placeholder="Max attendees"
+            value={newCapacity}
+            onChange={e => setNewCapacity(Number(e.target.value))}
+            required
+        />
+        
         <Button type="submit">
           Create Event
         </Button>
@@ -223,6 +237,14 @@ export default function AdminClient() {
             onChange={e => setEditData({ ...editData, date: e.target.value })}
             required
           />
+          <Input
+            name="capacity"
+            type="number"
+            value={editData.capacity}
+            onChange={e => setEditData({ ...editData, capacity: Number(e.target.value) })}
+            placeholder="Max attendees"
+            required
+          />
           <Button type="submit" variant="secondary">
             Save Changes
           </Button>
@@ -233,7 +255,10 @@ export default function AdminClient() {
       <ul className="space-y-2">
         {events.map(e => (
           <li key={e.id} className="border p-2 rounded flex justify-between items-center">
-            <span>{e.title} – {new Date(e.date).toLocaleDateString()}</span>
+            <span>
+              {e.title} – {new Date(e.date).toLocaleDateString()} 
+              {typeof (e as any).capacity !== 'undefined' && ` | Capacity: ${(e as any).capacity}`}
+            </span>
             <div className="space-x-2">
               <Button variant="outline" onClick={() => handleEdit(e)}>
                 Edit
