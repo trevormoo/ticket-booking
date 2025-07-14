@@ -2,6 +2,7 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { TicketPDF } from '@/app/components/pdf/TicketPDF'
+import React from 'react'
 import { renderToStream } from '@react-pdf/renderer'
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
@@ -19,12 +20,13 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     return new Response('Ticket not found', { status: 404 })
   }
 
-  const pdfStream = await renderToStream(<TicketPDF ticket={ticket} />)
-
+  const pdfStream = await renderToStream(
+    React.createElement(TicketPDF, { ticket })
+  )
   return new Response(pdfStream as any, {
     headers: {
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `inline; filename="ticket-${id}.pdf"`
+      'Content-Disposition': `inline; filename="tickets-${id}.pdf"`
     }
   })
 }
