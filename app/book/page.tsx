@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardHeader } from '@/app/components/ui/card'
+import { Input } from '@/app/components/ui/input'
+import { Button } from '@/app/components/ui/button'
+import { Label } from '@/app/components/ui/label'
 import { useRouter } from 'next/navigation'
 
 export default function BookingForm() {

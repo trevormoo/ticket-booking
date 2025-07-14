@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Button } from '@/app/components/ui/button'
+import { Card, CardContent, CardHeader } from '@/app/components/ui/card'
 
 export default async function CheckInPage({ params }: { params: { id: string } }) {
   const ticket = await prisma.ticket.findUnique({

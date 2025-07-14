@@ -1,6 +1,6 @@
 import Link from 'next/link'
-import { Card, CardHeader, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardContent } from '@/app/components/ui/card'
+import { Button } from '@/app/components/ui/button'
 import { prisma } from '@/lib/prisma'
 
 export default async function Home() {

@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/app/components/ui/card'
 import { notFound } from 'next/navigation'
 
 const prisma = new PrismaClient()
