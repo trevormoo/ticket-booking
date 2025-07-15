@@ -5,7 +5,7 @@ import BookingForm from './BookingForm'
 export default async function BookPage({ params }: { params: { id: string } }) {
   const event = await prisma.event.findUnique({
     where: { id: Number(params.id) },
-    include: { tickets: true }, // ✅ Get ticket count
+    include: { tickets: true },
   })
 
   if (!event) return notFound()
@@ -29,7 +29,9 @@ export default async function BookPage({ params }: { params: { id: string } }) {
       )}
 
       {isFull ? (
-        <p className="text-red-600 font-semibold">Sorry, this event is fully booked.</p>
+        <p className="text-red-600 font-semibold mt-4">
+          ❌ Sorry, this event is fully booked.
+        </p>
       ) : (
         <BookingForm eventId={event.id} />
       )}
