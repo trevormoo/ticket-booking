@@ -30,4 +30,5 @@ model Ticket {
   event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   checkedIn Boolean  @default(false)
+  paid      Boolean  @default(false)
 }

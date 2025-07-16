@@ -10,33 +10,32 @@ export default function BookingForm({ eventId }: { eventId: number }) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
-  setLoading(true)
+    e.preventDefault()
+    setLoading(true)
 
-  const res = await fetch('/api/bookings', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, email, eventId })
-  })
+    const res = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, eventId }),
+    })
 
-  const result = await res.json()
-  setLoading(false)
+    setLoading(false)
 
-  if (res.status === 409) {
-    toast.error('❌ You already booked this event.')
-    return
+    if (!res.ok) {
+      const result = await res.json()
+      toast.error(result.error || 'Failed to start payment')
+      return
+    }
+
+    const result = await res.json()
+    if (result.url) {
+      window.location.href = result.url // redirect to Stripe Checkout
+    } else {
+      toast.error('Stripe session failed')
+    }
   }
-
-  if (res.ok) {
-    toast.success('🎉 Booking successful! Confirmation sent to your email.')
-    router.push(`/tickets/${result.id}`)
-  } else {
-    toast.error(result.error || 'Something went wrong.')
-  }
-}
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -54,7 +53,7 @@ export default function BookingForm({ eventId }: { eventId: number }) {
         required
       />
       <Button type="submit" disabled={loading}>
-        {loading ? 'Booking...' : 'Confirm Booking'}
+        {loading ? 'Redirecting to payment...' : 'Confirm & Pay'}
       </Button>
     </form>
   )
