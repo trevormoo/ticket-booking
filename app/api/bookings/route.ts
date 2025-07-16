@@ -22,7 +22,7 @@ export async function POST(req: Request) {
   }
 
   const existing = await prisma.ticket.findFirst({
-    where: { email, eventId: Number(eventId) },
+    where: { email: email.toLowerCase(), eventId: Number(eventId) },
   })
 
   if (existing) {
@@ -49,8 +49,9 @@ export async function POST(req: Request) {
   const booking = await prisma.ticket.create({
     data: {
       name,
-      email,
+      email: email.toLowerCase(),
       eventId: Number(eventId),
+      paid: false,
     },
     include: { event: true },
   })

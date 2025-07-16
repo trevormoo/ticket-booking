@@ -5,10 +5,16 @@ import { useRouter } from "next/navigation"
 import { signOut } from "next-auth/react"
 import { Button } from "@/app/components/ui/button"
 import { Input } from "@/app/components/ui/input"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/app/components/ui/table"
+import { Badge } from "@/app/components/ui/badge"
+import { Trash2, CheckCircle2 } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card"
+
 
 // Types
 
 type Booking = {
+  paid: any
   id: number
   name: string
   email: string
@@ -151,45 +157,100 @@ export default function AdminClient() {
 
 
       {stats && (
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="bg-white rounded-xl shadow p-4">
-            <h3 className="text-sm font-semibold text-gray-500">📋 Total Bookings</h3>
-            <p className="text-2xl font-bold">{stats.totalBookings}</p>
-          </div>
-          <div className="bg-white rounded-xl shadow p-4">
-            <h3 className="text-sm font-semibold text-gray-500">✅ Checked In</h3>
-            <p className="text-2xl font-bold">{stats.checkedIn}</p>
-          </div>
-          <div className="bg-white rounded-xl shadow p-4">
-            <h3 className="text-sm font-semibold text-gray-500">❌ Not Checked In</h3>
-            <p className="text-2xl font-bold">{stats.notCheckedIn}</p>
-          </div>
-          <div className="bg-white rounded-xl shadow p-4">
-            <h3 className="text-sm font-semibold text-gray-500">📆 Total Events</h3>
-            <p className="text-2xl font-bold">{stats.totalEvents}</p>
-          </div>
-        </div>
-      )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <Card className="bg-blue-50 rounded-2xl shadow-lg border-0">
+          <CardHeader>
+            <CardTitle className="text-blue-800">Total Bookings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-extrabold">{stats.totalBookings}</div>
+          </CardContent>
+        </Card>
+        <Card className="bg-green-50 rounded-2xl shadow-lg border-0">
+          <CardHeader>
+            <CardTitle className="text-green-800">Checked In</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-extrabold">{stats.checkedIn}</div>
+          </CardContent>
+        </Card>
+        <Card className="bg-yellow-50 rounded-2xl shadow-lg border-0">
+          <CardHeader>
+            <CardTitle className="text-yellow-800">Not Checked In</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-extrabold">{stats.notCheckedIn}</div>
+          </CardContent>
+        </Card>
+        <Card className="bg-purple-50 rounded-2xl shadow-lg border-0">
+          <CardHeader>
+            <CardTitle className="text-purple-800">Total Events</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-extrabold">{stats.totalEvents}</div>
+          </CardContent>
+        </Card>
+      </div>
+    )}
 
-      {bookings.length === 0 ? (
-        <p>No bookings found.</p>
-      ) : (
-        <ul className="space-y-3">
-          {bookings.map(b => (
-            <li key={b.id} className="border p-3 rounded space-y-1">
-              <p><strong>{b.name}</strong> ({b.email})</p>
-              <p>Event: <strong>{b.event.title}</strong></p>
-              <p>Date: {new Date(b.event.date).toLocaleDateString()}</p>
-              <p>Booked at: {new Date(b.createdAt).toLocaleString()}</p>
-              <p><strong>Booking ID:</strong> {b.id}</p>
-              <p><strong>Checked In:</strong> {b.checkedIn ? '✅ Yes' : '❌ No'}</p>
-              <Button variant="destructive" onClick={() => handleDelete(b.id)}>
-                Delete
+      <div className="overflow-x-auto mb-8">
+  {bookings.length === 0 ? (
+    <p>No bookings found.</p>
+  ) : (
+    <Table className="rounded-xl shadow min-w-[900px]">
+      <TableHeader>
+        <TableRow>
+          <TableHead>Name</TableHead>
+          <TableHead>Email</TableHead>
+          <TableHead>Event</TableHead>
+          <TableHead>Date</TableHead>
+          <TableHead>Booked At</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Checked In</TableHead>
+          <TableHead>Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {bookings.map(b => (
+          <TableRow key={b.id} className="hover:bg-gray-50">
+            <TableCell>{b.name}</TableCell>
+            <TableCell>{b.email}</TableCell>
+            <TableCell>{b.event.title}</TableCell>
+            <TableCell>{new Date(b.event.date).toLocaleDateString()}</TableCell>
+            <TableCell>{new Date(b.createdAt).toLocaleString()}</TableCell>
+            <TableCell>
+              <Badge variant={b.paid ? "success" : "destructive"}>
+                {b.paid ? "Paid" : "Unpaid"}
+              </Badge>
+            </TableCell>
+            <TableCell>
+              <Badge variant={b.checkedIn ? "success" : "outline"}>
+                {b.checkedIn ? (
+                  <>
+                    <CheckCircle2 className="inline w-4 h-4 mr-1" />
+                    Yes
+                  </>
+                ) : (
+                  "No"
+                )}
+              </Badge>
+            </TableCell>
+            <TableCell>
+              <Button
+                size="icon"
+                variant="destructive"
+                onClick={() => handleDelete(b.id)}
+                aria-label="Delete booking"
+              >
+                <Trash2 className="w-4 h-4" />
               </Button>
-            </li>
-          ))}
-        </ul>
-      )}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  )}
+</div>
 
       <h2 className="text-xl font-bold mt-8 mb-2">Create New Event</h2>
       <form onSubmit={handleCreateEvent} className="space-y-2 mb-6">

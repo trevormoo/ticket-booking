@@ -20,6 +20,7 @@ model Event {
   date    DateTime
   capacity  Int?
   tickets Ticket[] 
+  
 }
 
 model Ticket {
@@ -31,4 +32,6 @@ model Ticket {
   createdAt DateTime @default(now())
   checkedIn Boolean  @default(false)
   paid      Boolean  @default(false)
+
+  @@unique([email, eventId])
 }
