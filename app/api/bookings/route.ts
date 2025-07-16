@@ -55,13 +55,13 @@ export async function POST(req: Request) {
     include: { event: true },
   })
 
-  await sendConfirmationEmail({
+  /*await sendConfirmationEmail({
     name,
     email,
     eventTitle: booking.event.title,
     eventDate: new Date(booking.event.date).toLocaleDateString(),
     bookingId: booking.id.toString()
-  })
+  })*/
 
   return NextResponse.json({ id: booking.id }, { status: 201 })
 }

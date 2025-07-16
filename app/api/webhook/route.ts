@@ -1,3 +1,4 @@
+import { sendConfirmationEmail } from '@/lib/email'
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
@@ -34,14 +35,24 @@ export async function POST(req: NextRequest) {
     const bookingId = session.metadata?.bookingId
 
     if (bookingId) {
-      await prisma.ticket.update({
+      // 1. Mark ticket as paid and fetch booking details with event
+      const booking = await prisma.ticket.update({
         where: { id: Number(bookingId) },
         data: { paid: true },
+        include: { event: true }
       })
-      console.log('✅ Ticket marked as paid:', bookingId)
+
+      // 2. Send email here (now that payment is confirmed)
+      await sendConfirmationEmail({
+        name: booking.name,
+        email: booking.email,
+        eventTitle: booking.event.title,
+        eventDate: new Date(booking.event.date).toLocaleDateString(),
+        bookingId: booking.id.toString(),
+        // Pass QR URL if needed
+      })
     }
   }
 
-  // Always return a response so Stripe knows it was received
   return new NextResponse('Received', { status: 200 })
 }
