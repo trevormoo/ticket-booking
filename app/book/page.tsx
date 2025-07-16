@@ -60,11 +60,6 @@ export default function BookingForm() {
             <Input name="email" type="email" value={form.email} onChange={handleChange} required />
           </div>
 
-          <div>
-            <Label htmlFor="eventId">Event ID</Label>
-            <Input name="eventId" value={form.eventId} onChange={handleChange} required />
-          </div>
-
           <Button type="submit" disabled={loading}>
             {loading ? 'Booking...' : 'Book Ticket'}
           </Button>

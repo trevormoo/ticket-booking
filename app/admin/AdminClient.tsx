@@ -37,7 +37,7 @@ type Event = {
 }
 
 export default function AdminClient() {
-  const [newCapacity, setNewCapacity] = useState<number>(0)
+  const [newCapacity, setNewCapacity] = useState<string>('')
   
   const [bookings, setBookings] = useState<Booking[]>([])
   const [events, setEvents] = useState<Event[]>([])
@@ -115,7 +115,7 @@ export default function AdminClient() {
     const res = await fetch('/api/events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: newTitle, date: newDate, capacity: newCapacity }) // ✅ include it
+      body: JSON.stringify({ title: newTitle, date: newDate, capacity: newCapacity }) 
     })
 
     if (res.ok) {
@@ -123,6 +123,7 @@ export default function AdminClient() {
       setEvents(prev => [newEvent, ...prev])
       setNewTitle('')
       setNewDate('')
+      setNewCapacity('');
     } else {
       alert('Failed to create event')
     }
@@ -273,7 +274,7 @@ export default function AdminClient() {
             type="number"
             placeholder="Max attendees"
             value={newCapacity}
-            onChange={e => setNewCapacity(Number(e.target.value))}
+            onChange={e => setNewCapacity(e.target.value)}
             required
         />
         
