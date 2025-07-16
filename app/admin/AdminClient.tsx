@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/app/components/ui/badge"
 import { Trash2, CheckCircle2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card"
+import { toast } from "sonner";
 
 
 // Types
@@ -37,8 +38,7 @@ type Event = {
 }
 
 export default function AdminClient() {
-  const [newCapacity, setNewCapacity] = useState<string>('')
-  
+  const [newCapacity, setNewCapacity] = useState<number | ''>('');  
   const [bookings, setBookings] = useState<Booking[]>([])
   const [events, setEvents] = useState<Event[]>([])
   const [editing, setEditing] = useState(false)
@@ -115,7 +115,7 @@ export default function AdminClient() {
     const res = await fetch('/api/events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: newTitle, date: newDate, capacity: newCapacity }) 
+      body: JSON.stringify({ title: newTitle, date: newDate, capacity: newCapacity === '' ? undefined : Number(newCapacity) }) 
     })
 
     if (res.ok) {
@@ -124,6 +124,7 @@ export default function AdminClient() {
       setNewTitle('')
       setNewDate('')
       setNewCapacity('');
+      toast.success("Event created!");
     } else {
       alert('Failed to create event')
     }
@@ -195,63 +196,63 @@ export default function AdminClient() {
     )}
 
       <div className="overflow-x-auto mb-8">
-  {bookings.length === 0 ? (
-    <p>No bookings found.</p>
-  ) : (
-    <Table className="rounded-xl shadow min-w-[900px]">
-      <TableHeader>
-        <TableRow>
-          <TableHead>Name</TableHead>
-          <TableHead>Email</TableHead>
-          <TableHead>Event</TableHead>
-          <TableHead>Date</TableHead>
-          <TableHead>Booked At</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Checked In</TableHead>
-          <TableHead>Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {bookings.map(b => (
-          <TableRow key={b.id} className="hover:bg-gray-50">
-            <TableCell>{b.name}</TableCell>
-            <TableCell>{b.email}</TableCell>
-            <TableCell>{b.event.title}</TableCell>
-            <TableCell>{new Date(b.event.date).toLocaleDateString()}</TableCell>
-            <TableCell>{new Date(b.createdAt).toLocaleString()}</TableCell>
-            <TableCell>
-              <Badge variant={b.paid ? "success" : "destructive"}>
-                {b.paid ? "Paid" : "Unpaid"}
-              </Badge>
-            </TableCell>
-            <TableCell>
-              <Badge variant={b.checkedIn ? "success" : "outline"}>
-                {b.checkedIn ? (
-                  <>
-                    <CheckCircle2 className="inline w-4 h-4 mr-1" />
-                    Yes
-                  </>
-                ) : (
-                  "No"
-                )}
-              </Badge>
-            </TableCell>
-            <TableCell>
-              <Button
-                size="icon"
-                variant="destructive"
-                onClick={() => handleDelete(b.id)}
-                aria-label="Delete booking"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  )}
-</div>
+        {bookings.length === 0 ? (
+          <p>No bookings found.</p>
+        ) : (
+          <Table className="rounded-xl shadow min-w-[900px]">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Event</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Booked At</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Checked In</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {bookings.map(b => (
+                <TableRow key={b.id} className="hover:bg-gray-50">
+                  <TableCell>{b.name}</TableCell>
+                  <TableCell>{b.email}</TableCell>
+                  <TableCell>{b.event.title}</TableCell>
+                  <TableCell>{new Date(b.event.date).toLocaleDateString()}</TableCell>
+                  <TableCell>{new Date(b.createdAt).toLocaleString()}</TableCell>
+                  <TableCell>
+                    <Badge variant={b.paid ? "success" : "destructive"}>
+                      {b.paid ? "Paid" : "Unpaid"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={b.checkedIn ? "success" : "outline"}>
+                      {b.checkedIn ? (
+                        <>
+                          <CheckCircle2 className="inline w-4 h-4 mr-1" />
+                          Yes
+                        </>
+                      ) : (
+                        "No"
+                      )}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      size="icon"
+                      variant="destructive"
+                      onClick={() => handleDelete(b.id)}
+                      aria-label="Delete booking"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </div>
 
       <h2 className="text-xl font-bold mt-8 mb-2">Create New Event</h2>
       <form onSubmit={handleCreateEvent} className="space-y-2 mb-6">
@@ -274,7 +275,7 @@ export default function AdminClient() {
             type="number"
             placeholder="Max attendees"
             value={newCapacity}
-            onChange={e => setNewCapacity(e.target.value)}
+            onChange={e => setNewCapacity(e.target.value === '' ? '' : Number(e.target.value))}
             required
         />
         
