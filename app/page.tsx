@@ -3,6 +3,9 @@ import { Card, CardHeader, CardContent } from '@/app/components/ui/card'
 import { Button } from '@/app/components/ui/button'
 import { prisma } from '@/lib/prisma'
 
+// Force dynamic rendering (don't pre-render at build time)
+export const dynamic = 'force-dynamic'
+
 export default async function Home() {
   const events = await prisma.event.findMany({
     orderBy: { date: 'asc' },
