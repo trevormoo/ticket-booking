@@ -3,9 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { TicketPDF } from '@/app/components/pdf/TicketPDF'
 import { renderToBuffer } from '@react-pdf/renderer'
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id: idParam } = await params
-  const id = Number(idParam)
+export async function GET(req: NextRequest, context: { params: { id: string } }) {
+  const id = Number(context.params.id)
   if (!id) {
     return new Response('Invalid ticket ID', { status: 400 })
   }

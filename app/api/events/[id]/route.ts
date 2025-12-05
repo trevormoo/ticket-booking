@@ -4,11 +4,10 @@ import { updateEventSchema, validateRequestBody, parseId } from '@/lib/validatio
 
 export async function PUT(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  context: { params: { id: string } }
 ) {
   try {
-    const { id: idParam } = await params
-    const id = parseId(idParam)
+    const id = parseId(context.params.id)
     if (!id) {
       return NextResponse.json({ error: 'Invalid event ID' }, { status: 400 })
     }
@@ -46,11 +45,10 @@ export async function PUT(
 
 export async function DELETE(
   req: Request,
-  context: { params: Promise<{ id: string }> }
+  context: { params: { id: string } }
 ) {
   try {
-    const { id: idParam } = await context.params
-    const id = parseId(idParam)
+    const id = parseId(context.params.id)
     if (!id) {
       return NextResponse.json({ error: 'Invalid event ID' }, { status: 400 })
     }
