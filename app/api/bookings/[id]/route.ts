@@ -4,10 +4,11 @@ import { parseId } from '@/lib/validations'
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseId(params.id)
+    const { id: idParam } = await params
+    const id = parseId(idParam)
 
     if (!id) {
       return NextResponse.json({ error: 'Invalid booking ID' }, { status: 400 })

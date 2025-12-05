@@ -1,11 +1,11 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { TicketPDF } from '@/app/components/pdf/TicketPDF'
-import React from 'react'
 import { renderToBuffer } from '@react-pdf/renderer'
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const id = Number(params.id)
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id: idParam } = await params
+  const id = Number(idParam)
   if (!id) {
     return new Response('Invalid ticket ID', { status: 400 })
   }
@@ -19,9 +19,19 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     return new Response('Ticket not found', { status: 404 })
   }
 
+  // Transform ticket data to match TicketPDF props
+  const ticketData = {
+    ...ticket,
+    event: {
+      ...ticket.event,
+      date: ticket.event.date.toISOString(),
+    },
+    createdAt: ticket.createdAt.toISOString(),
+  }
+
   // Use buffer for widest compatibility
   const pdfBuffer = await renderToBuffer(
-    React.createElement(TicketPDF, { ticket })
+    <TicketPDF ticket={ticketData} />
   )
 
   return new Response(pdfBuffer, {

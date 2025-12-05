@@ -61,6 +61,7 @@ export function TicketPDF({ ticket }: { ticket: Props['ticket'] }) {
         {ticket.qrUrl && (
           <View style={styles.section}>
             <Text>Scan this at the entrance:</Text>
+            {/* eslint-disable-next-line jsx-a11y/alt-text */}
             <Image src={ticket.qrUrl} style={styles.qr} />
           </View>
         )}

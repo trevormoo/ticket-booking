@@ -63,7 +63,7 @@ export function validateRequestBody<T>(
     return { success: true, data: validatedData }
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const firstError = error.errors[0]
+      const firstError = error.issues[0]
       return { success: false, error: firstError.message }
     }
     return { success: false, error: 'Validation failed' }
