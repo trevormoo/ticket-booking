@@ -1,45 +1,71 @@
-import { PrismaClient } from '@prisma/client'
 import { NextResponse } from 'next/server'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
+import { updateEventSchema, validateRequestBody, parseId } from '@/lib/validations'
 
 export async function PUT(
   req: Request,
   { params }: { params: { id: string } }
 ) {
-  const { title, date, capacity} = await req.json()
+  try {
+    const id = parseId(params.id)
+    if (!id) {
+      return NextResponse.json({ error: 'Invalid event ID' }, { status: 400 })
+    }
 
-  const updated = await prisma.event.update({
-    where: { id: Number(params.id) },
-    data: {
-      title,
-      date: new Date(date),
-      capacity: Number(capacity),
-    },
-  })
+    const body = await req.json()
 
-  return NextResponse.json(updated)
+    // Validate input
+    const validation = validateRequestBody(updateEventSchema, body)
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400 })
+    }
+
+    const { title, date, capacity } = validation.data
+
+    // Build update data object with only provided fields
+    const updateData: any = {}
+    if (title !== undefined) updateData.title = title
+    if (date !== undefined) updateData.date = new Date(date)
+    if (capacity !== undefined) updateData.capacity = capacity
+
+    const updated = await prisma.event.update({
+      where: { id },
+      data: updateData,
+    })
+
+    return NextResponse.json(updated)
+  } catch (error) {
+    console.error('Failed to update event:', error)
+    return NextResponse.json(
+      { error: 'Failed to update event' },
+      { status: 500 }
+    )
+  }
 }
-
 
 export async function DELETE(
   req: Request,
   context: { params: { id: string } }
 ) {
-  const id = Number(context.params.id) 
   try {
-    await prisma.ticket.deleteMany({
-      where: { eventId: id },
-    })
+    const id = parseId(context.params.id)
+    if (!id) {
+      return NextResponse.json({ error: 'Invalid event ID' }, { status: 400 })
+    }
 
-    // ✅ Then delete the event
-    await prisma.event.delete({
-      where: { id },
-    })
+    // Use transaction for atomicity
+    await prisma.$transaction([
+      prisma.ticket.deleteMany({
+        where: { eventId: id },
+      }),
+      prisma.event.delete({
+        where: { id },
+      }),
+    ])
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('❌ Failed to delete event:', error)
+    console.error('Failed to delete event:', error)
     return NextResponse.json({ error: 'Delete failed' }, { status: 500 })
   }
 }

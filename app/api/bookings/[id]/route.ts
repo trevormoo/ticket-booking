@@ -1,26 +1,25 @@
-import { PrismaClient } from '@prisma/client'
 import { NextResponse } from 'next/server'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
+import { parseId } from '@/lib/validations'
 
 export async function DELETE(
   req: Request,
   { params }: { params: { id: string } }
 ) {
-  const id = Number(params.id)
-
-  if (isNaN(id)) {
-    return NextResponse.json({ error: 'Invalid ID' }, { status: 400 })
-  }
-
   try {
+    const id = parseId(params.id)
+
+    if (!id) {
+      return NextResponse.json({ error: 'Invalid booking ID' }, { status: 400 })
+    }
+
     const deleted = await prisma.ticket.delete({
       where: { id },
     })
 
     return NextResponse.json(deleted)
   } catch (error) {
-    console.error('❌ Failed to delete booking:', error)
+    console.error('Failed to delete booking:', error)
     return NextResponse.json({ error: 'Delete failed' }, { status: 500 })
   }
 }

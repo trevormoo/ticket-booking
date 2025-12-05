@@ -1,68 +1,89 @@
-import { PrismaClient } from '@prisma/client'
 import { NextResponse } from 'next/server'
-import { sendConfirmationEmail } from '../../../lib/email'
-
-const prisma = new PrismaClient()
+import { prisma } from '../../../lib/prisma'
+import { createBookingSchema, validateRequestBody } from '../../../lib/validations'
 
 // GET: List all bookings with event info
 export async function GET() {
-  const bookings = await prisma.ticket.findMany({
-    include: { event: true },
-    orderBy: { createdAt: 'desc' },
-  })
-  return NextResponse.json(bookings)
+  try {
+    const bookings = await prisma.ticket.findMany({
+      include: { event: true },
+      orderBy: { createdAt: 'desc' },
+    })
+    return NextResponse.json(bookings)
+  } catch (error) {
+    console.error('Failed to fetch bookings:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch bookings' },
+      { status: 500 }
+    )
+  }
 }
 
 // POST: Create a new booking
 export async function POST(req: Request) {
-  const { name, email, eventId } = await req.json()
+  try {
+    const body = await req.json()
 
-  if (!name || !email || !eventId) {
-    return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
+    // Validate input
+    const validation = validateRequestBody(createBookingSchema, body)
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400 })
+    }
+
+    const { name, email, eventId } = validation.data
+
+    // Use a transaction to prevent race conditions
+    const booking = await prisma.$transaction(async (tx) => {
+      // Check for duplicate booking
+      const existing = await tx.ticket.findFirst({
+        where: { email, eventId },
+      })
+
+      if (existing) {
+        throw new Error('You already booked this event.')
+      }
+
+      // Get event with current ticket count
+      const event = await tx.event.findUnique({
+        where: { id: eventId },
+        include: {
+          _count: {
+            select: { tickets: true },
+          },
+        },
+      })
+
+      if (!event) {
+        throw new Error('Event not found')
+      }
+
+      // Check capacity atomically
+      if (event.capacity && event._count.tickets >= event.capacity) {
+        throw new Error('Event is fully booked.')
+      }
+
+      // Create the booking
+      return await tx.ticket.create({
+        data: {
+          name,
+          email,
+          eventId,
+          paid: false,
+        },
+        include: { event: true },
+      })
+    })
+
+    return NextResponse.json({ id: booking.id }, { status: 201 })
+  } catch (error) {
+    console.error('Failed to create booking:', error)
+
+    const message = error instanceof Error ? error.message : 'Failed to create booking'
+    const status = message.includes('already booked') ? 409
+      : message.includes('not found') ? 404
+      : message.includes('fully booked') ? 400
+      : 500
+
+    return NextResponse.json({ error: message }, { status })
   }
-
-  const existing = await prisma.ticket.findFirst({
-    where: { email: email.toLowerCase(), eventId: Number(eventId) },
-  })
-
-  if (existing) {
-    return NextResponse.json(
-      { error: 'You already booked this event.' },
-      { status: 409 }
-    )
-  }
-
-  // 🧠 Check if event is at capacity
-  const event = await prisma.event.findUnique({
-    where: { id: Number(eventId) },
-    include: { tickets: true }
-  })
-
-  if (!event) {
-    return NextResponse.json({ error: 'Event not found' }, { status: 404 })
-  }
-
-  if (event.capacity && event.tickets.length >= event.capacity) {
-    return NextResponse.json({ error: 'Event is fully booked.' }, { status: 400 })
-  }
-
-  const booking = await prisma.ticket.create({
-    data: {
-      name,
-      email: email.toLowerCase(),
-      eventId: Number(eventId),
-      paid: false,
-    },
-    include: { event: true },
-  })
-
-  /*await sendConfirmationEmail({
-    name,
-    email,
-    eventTitle: booking.event.title,
-    eventDate: new Date(booking.event.date).toLocaleDateString(),
-    bookingId: booking.id.toString()
-  })*/
-
-  return NextResponse.json({ id: booking.id }, { status: 201 })
 }

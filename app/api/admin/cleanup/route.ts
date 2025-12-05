@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 export async function POST() {
   try {
@@ -19,7 +17,7 @@ export async function POST() {
       },
     })
 
-    return NextResponse.js({
+    return NextResponse.json({
       message: `✅ Cleaned ${deleted.count} orphaned ticket(s).`,
       orphanedIds: orphaned.map(t => t.id),
     })

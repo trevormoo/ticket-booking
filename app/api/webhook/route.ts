@@ -31,26 +31,37 @@ export async function POST(req: NextRequest) {
   // Handle events you care about
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session
-    // ✅ This matches what you set in checkout metadata!
     const bookingId = session.metadata?.bookingId
 
     if (bookingId) {
-      // 1. Mark ticket as paid and fetch booking details with event
-      const booking = await prisma.ticket.update({
-        where: { id: Number(bookingId) },
-        data: { paid: true },
-        include: { event: true }
-      })
+      try {
+        // 1. Mark ticket as paid and fetch booking details with event
+        const booking = await prisma.ticket.update({
+          where: { id: Number(bookingId) },
+          data: { paid: true },
+          include: { event: true }
+        })
 
-      // 2. Send email here (now that payment is confirmed)
-      await sendConfirmationEmail({
-        name: booking.name,
-        email: booking.email,
-        eventTitle: booking.event.title,
-        eventDate: new Date(booking.event.date).toLocaleDateString(),
-        bookingId: booking.id.toString(),
-        // Pass QR URL if needed
-      })
+        // 2. Send email here (now that payment is confirmed)
+        try {
+          await sendConfirmationEmail({
+            name: booking.name,
+            email: booking.email,
+            eventTitle: booking.event.title,
+            eventDate: new Date(booking.event.date).toLocaleDateString(),
+            bookingId: booking.id.toString(),
+          })
+        } catch (emailError) {
+          // Log email error but don't fail the webhook
+          // The ticket is already marked as paid, so we don't want to lose that
+          console.error('Failed to send confirmation email:', emailError)
+          // TODO: Implement retry mechanism or queue for failed emails
+        }
+      } catch (dbError) {
+        console.error('Failed to update booking in webhook:', dbError)
+        // Return error for database failures so Stripe retries
+        return new NextResponse('Database error', { status: 500 })
+      }
     }
   }
 

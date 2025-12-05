@@ -1,27 +1,47 @@
-import { PrismaClient } from '@prisma/client'
 import { NextResponse } from 'next/server'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
+import { createEventSchema, validateRequestBody } from '@/lib/validations'
 
 export async function GET() {
-  const events = await prisma.event.findMany({ orderBy: { date: 'asc' } })
-  return NextResponse.json(events)
+  try {
+    const events = await prisma.event.findMany({ orderBy: { date: 'asc' } })
+    return NextResponse.json(events)
+  } catch (error) {
+    console.error('Failed to fetch events:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch events' },
+      { status: 500 }
+    )
+  }
 }
 
-// ✅ POST: Create new event
+// POST: Create new event
 export async function POST(req: Request) {
-  const { title, date } = await req.json()
+  try {
+    const body = await req.json()
 
-  if (!title || !date) {
-    return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
+    // Validate input
+    const validation = validateRequestBody(createEventSchema, body)
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400 })
+    }
+
+    const { title, date, capacity } = validation.data
+
+    const event = await prisma.event.create({
+      data: {
+        title,
+        date: new Date(date),
+        capacity,
+      },
+    })
+
+    return NextResponse.json(event, { status: 201 })
+  } catch (error) {
+    console.error('Failed to create event:', error)
+    return NextResponse.json(
+      { error: 'Failed to create event' },
+      { status: 500 }
+    )
   }
-
-  const event = await prisma.event.create({
-    data: {
-      title,
-      date: new Date(date),
-    },
-  })
-
-  return NextResponse.json(event, { status: 201 })
 }
