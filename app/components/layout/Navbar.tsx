@@ -33,12 +33,14 @@ export function Navbar() {
     }
   }, [isOpen])
 
+  const closeMenu = () => setIsOpen(false)
+
   return (
     <>
       <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-lg supports-[backdrop-filter]:bg-background/60">
         <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group z-[60]">
+          {/* Logo - always clickable */}
+          <Link href="/" onClick={closeMenu} className="flex items-center gap-2 group relative z-[60]">
             <div className="relative">
               <div className="absolute -inset-1 rounded-lg bg-gradient-to-r from-primary to-accent opacity-60 blur-sm group-hover:opacity-100 transition-opacity" />
               <div className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -90,40 +92,46 @@ export function Navbar() {
         </nav>
       </header>
 
-      {/* Mobile Menu Overlay - Outside header to prevent layout issues */}
-      <div
-        className={cn(
-          'fixed inset-0 z-[55] bg-background md:hidden transition-opacity duration-300',
-          isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        )}
-      >
-        <div className="flex flex-col items-center justify-center min-h-screen gap-8 p-8">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setIsOpen(false)}
-              className={cn(
-                'text-2xl font-semibold',
-                pathname === link.href
-                  ? 'text-primary'
-                  : 'text-foreground hover:text-primary'
-              )}
-            >
-              {link.label}
-            </Link>
-          ))}
-          <Link
-            href="/#events"
-            onClick={() => setIsOpen(false)}
-          >
-            <Button size="lg" className="gap-2 bg-gradient-to-r from-primary to-primary/80">
-              <Sparkles className="h-4 w-4" />
-              Browse Events
-            </Button>
-          </Link>
-        </div>
-      </div>
+      {/* Mobile Menu Overlay */}
+      {isOpen && (
+        <>
+          {/* Backdrop - click to close */}
+          <div
+            className="fixed inset-0 z-[54] bg-black/20 md:hidden"
+            onClick={closeMenu}
+            aria-hidden="true"
+          />
+
+          {/* Menu Panel */}
+          <div className="fixed inset-x-0 top-16 z-[55] bg-background border-b shadow-lg md:hidden">
+            <div className="flex flex-col p-4 space-y-2">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={closeMenu}
+                  className={cn(
+                    'px-4 py-3 text-lg font-medium rounded-lg transition-colors',
+                    pathname === link.href
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-foreground hover:bg-muted'
+                  )}
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <div className="pt-2">
+                <Link href="/#events" onClick={closeMenu}>
+                  <Button className="w-full gap-2 bg-gradient-to-r from-primary to-primary/80">
+                    <Sparkles className="h-4 w-4" />
+                    Browse Events
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </>
   )
 }
