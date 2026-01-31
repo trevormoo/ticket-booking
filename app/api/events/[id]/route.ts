@@ -4,10 +4,11 @@ import { updateEventSchema, validateRequestBody, parseId } from '@/lib/validatio
 
 export async function PUT(
   req: Request,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseId(context.params.id)
+    const { id: idParam } = await params
+    const id = parseId(idParam)
     if (!id) {
       return NextResponse.json({ error: 'Invalid event ID' }, { status: 400 })
     }
@@ -23,7 +24,7 @@ export async function PUT(
     const { title, date, capacity } = validation.data
 
     // Build update data object with only provided fields
-    const updateData: any = {}
+    const updateData: Record<string, unknown> = {}
     if (title !== undefined) updateData.title = title
     if (date !== undefined) updateData.date = new Date(date)
     if (capacity !== undefined) updateData.capacity = capacity
@@ -45,10 +46,11 @@ export async function PUT(
 
 export async function DELETE(
   req: Request,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseId(context.params.id)
+    const { id: idParam } = await params
+    const id = parseId(idParam)
     if (!id) {
       return NextResponse.json({ error: 'Invalid event ID' }, { status: 400 })
     }
